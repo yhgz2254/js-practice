@@ -1,0 +1,97 @@
+<!DOCTYPE html>  
+<meta charset="utf-8" />  
+<title>WebSocket Test</title>  
+<script language="javascript" type="text/javascript">  
+    // var wsUri ="ws://echo.websocket.org/";  
+    var wsUrl ="ws://172.16.144.150:20000/?sign=MaybeYouHaveGotThisSignWithWireSharkOrIDA"; 
+    var output;  
+
+    var reqData = {
+        // cid: "cixYMjEtMi91cS1zMC8wNi0rNDEsMg",
+        action: "gmCommand",
+        param1: {"actionPoint":4,"equipList":[{"level":"70","quality":"4","equipId":"101101"},{"level":"70","quality":"4","equipId":"101102"},{"level":"70","quality":"4","equipId":"101103"},{"level":"70","quality":"4","equipId":"101104"},{"level":"70","quality":"4","equipId":"101105"},{"level":"70","quality":"4","equipId":"101106"}],"charID":6,"level":70,"grade":3,"warSkillList":{"warSkillPassiveType":{"level":"70","skillId":"102105"},"warSkillDuel":{"level":"70","skillId":"102103"},"warSkillEnergy":{"level":"70","skillId":"102101"},"warSkillPassiveRing":{"level":"70","skillId":"102107"},"warSkillAuto":{"level":"70","skillId":"102102"},"warSkillPassiveSelf":{"level":"70","skillId":"102106"},"warSkillPassiveAttr":{"level":"70","skillId":"102104"}}},
+        command: "upgrade"
+    }
+    
+    function init() { 
+        output = document.getElementById("output"); 
+        testWebSocket(); 
+    }  
+
+    var msgId = 0;
+ 
+    function testWebSocket() { 
+        websocket = new WebSocket(wsUrl); 
+        websocket.onopen = function(evt) { 
+            onOpen(evt) 
+        }; 
+        websocket.onclose = function(evt) { 
+            onClose(evt) 
+        }; 
+        websocket.onmessage = function(evt) { 
+            onMessage(evt) 
+        }; 
+        websocket.onerror = function(evt) { 
+            onError(evt) 
+        }; 
+    }  
+ 
+    function onOpen(evt) { 
+        writeToScreen("CONNECTED"); 
+        // doSend("WebSocket rocks"); 
+        // testMsgSend ("Hello, socketer!");
+        testMsgSend (reqData);
+    }  
+ 
+    function onClose(evt) { 
+        writeToScreen("DISCONNECTED"); 
+    }  
+ 
+    function onMessage(evt) { 
+        writeToScreen('<span style="color: blue;">RESPONSE: '+ evt.data+'</span>'); 
+        writeToScreen("msgId now is " + msgId); 
+        if (msgId == 1) {
+            websocket.send({
+                method : "init",
+                params : {ver : 0},
+                id : 1
+            });
+            websocket.send({
+                method : "system.getSecs",
+                params : {},
+                id : 2
+            });
+        }
+        else if (msgId == 3) {
+            writeToScreen("Buck up");
+        }
+        // websocket.close(); 
+    }  
+ 
+    function onError(evt) { 
+        writeToScreen('<span style="color: red;">ERROR:</span> '+ evt.data); 
+    }  
+ 
+    function doSend(message) { 
+        writeToScreen("SENT: " + message);  
+        websocket.send(message); 
+    }  
+
+    function testMsgSend(message) {
+        writeToScreen("SENT: " + JSON.stringify(message));
+        msgId++;
+        websocket.send(message);
+    }
+ 
+    function writeToScreen(message) { 
+        var pre = document.createElement("p"); 
+        pre.style.wordWrap = "break-word"; 
+        pre.innerHTML = message; 
+        output.appendChild(pre); 
+    }  
+ 
+    window.addEventListener("load", init, false);  
+</script>  
+<h2>WebSocket Test</h2>  
+<div id="output"></div>  
+</html>
